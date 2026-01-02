@@ -120,7 +120,6 @@ MIT License – frei verwendbar, veränderbar und erweiterbar.
 ## 👤 Autor
 
 Erstellt von **ErikDevelopment**
-Design inspiriert von modernen Password Managern.
 
 ---
 
