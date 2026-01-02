@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Password Generator</title>
+
+<style>
+:root {
+  --bg: #0a0b0f;
+  --card: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.08);
+  --text: #ffffff;
+  --muted: #a1a1aa;
+  --accent: #8b8bff;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  background:
+    radial-gradient(circle at top, #1b1e2b, var(--bg));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text);
+}
+
+.app {
+  width: 360px;
+  padding: 22px;
+  border-radius: 28px;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.08),
+    rgba(255,255,255,0.02)
+  );
+  backdrop-filter: blur(25px);
+  border: 1px solid var(--border);
+  box-shadow: 0 40px 80px rgba(0,0,0,.7);
+}
+
+/* HEADER */
+.header {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+/* PASSWORD FIELD */
+.password {
+  background: rgba(0,0,0,.35);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+}
+
+.password span {
+  font-size: 14px;
+  opacity: .9;
+  word-break: break-all;
+}
+
+.password button {
+  background: rgba(255,255,255,.08);
+  border: none;
+  color: white;
+  border-radius: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+/* STRENGTH BAR */
+.strength {
+  height: 6px;
+  margin-top: 10px;
+  background: rgba(255,255,255,.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.strength div {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: .3s;
+}
+
+/* SECTION */
+.section {
+  margin-top: 20px;
+}
+
+.section label {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* SLIDER */
+input[type=range] {
+  width: 100%;
+  margin-top: 8px;
+  accent-color: var(--accent);
+}
+
+/* OPTION ROW */
+.option {
+  background: rgba(0,0,0,.35);
+  border-radius: 16px;
+  padding: 14px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+
+/* SWITCH */
+.option input {
+  appearance: none;
+  width: 42px;
+  height: 24px;
+  background: #333;
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: .3s;
+}
+
+.option input:checked {
+  background: var(--accent);
+}
+
+.option input::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: .3s;
+}
+
+.option input:checked::before {
+  left: 21px;
+}
+
+/* BUTTON */
+.generate {
+  margin-top: 22px;
+  width: 100%;
+  padding: 16px;
+  border-radius: 20px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: #000;
+  background: linear-gradient(135deg, #9b9bff, #6f6fff);
+  cursor: pointer;
+}
+
+#copyBtn {
+  transition: all .3s ease;
+  position: relative;
+  min-width: 48px;
+}
+
+#copyBtn.copied {
+  background: rgba(120,255,180,.15);
+  color: #6bffb0;
+}
+
+#copyBtn.copied::after {
+  content: "✓ Copied";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  animation: fadeIn .2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+  <div class="header">Password Generator</div>
+
+    <div class="password">
+    <span id="password">Generate secure password</span>
+    <button id="copyBtn" onclick="copy()">⧉</button>
+    </div>
+
+
+  <div class="strength"><div id="strengthBar"></div></div>
+
+  <div class="section">
+    <label>
+      Length
+      <span id="lengthValue">16</span>
+    </label>
+    <input type="range" min="6" max="64" value="16" id="length">
+  </div>
+
+  <div class="section">
+    <div class="option">Uppercase <input type="checkbox" id="upper" checked></div>
+    <div class="option">Lowercase <input type="checkbox" id="lower" checked></div>
+    <div class="option">Numbers <input type="checkbox" id="numbers" checked></div>
+    <div class="option">Symbols <input type="checkbox" id="symbols"></div>
+    <div class="option">Exclude similar <input type="checkbox" id="exclude"></div>
+  </div>
+
+  <button class="generate" onclick="generate()">Generate Password</button>
+</div>
+
+<script>
+const lengthInput = document.getElementById("length");
+const lengthValue = document.getElementById("lengthValue");
+const passwordEl = document.getElementById("password");
+const strengthBar = document.getElementById("strengthBar");
+
+lengthInput.oninput = () => lengthValue.textContent = lengthInput.value;
+
+function generate() {
+  let chars = "";
+  if (upper.checked) chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  if (lower.checked) chars += "abcdefghijklmnopqrstuvwxyz";
+  if (numbers.checked) chars += "0123456789";
+  if (symbols.checked) chars += "!@#$%^&*()-_=+[]{}<>?";
+
+  if (exclude.checked) chars = chars.replace(/[lI1O0]/g, "");
+
+  let pw = "";
+  for (let i = 0; i < lengthInput.value; i++) {
+    pw += chars[Math.floor(Math.random() * chars.length)];
+  }
+
+  passwordEl.textContent = pw;
+  strengthBar.style.width = Math.min(100, pw.length * 4) + "%";
+}
+
+function copy() {
+  const btn = document.getElementById("copyBtn");
+  const text = document.getElementById("password").textContent;
+
+  navigator.clipboard.writeText(text);
+
+  btn.classList.add("copied");
+  btn.textContent = "";
+
+  setTimeout(() => {
+    btn.classList.remove("copied");
+    btn.textContent = "⧉";
+  }, 1500);
+}
+</script>
+
+</body>
+</html>
